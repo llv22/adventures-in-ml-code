@@ -1,4 +1,37 @@
 from __future__ import print_function
+
+import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
+import tensorflow as tf
+
+## 1. simple setup of default tensorflow session
+# tf_config = tf.ConfigProto(log_device_placement=True)
+# tf_config.gpu_options.allow_growth = True
+# tf_config.gpu_options.per_process_gpu_memory_fraction = 0.1
+# sess = tf.Session(config=tf_config)
+
+## 2. more strategy setup of default tensorflow session
+num_cores = 4
+GPU = len([v for v in os.environ["CUDA_VISIBLE_DEVICES"].split(',') if len(v)>0])
+
+if GPU > 0:
+    num_GPU = 1
+    num_CPU = 4
+else:
+    num_GPU = 0
+    num_CPU = 4
+
+tf_config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,\
+        inter_op_parallelism_threads=num_cores, allow_soft_placement=True,\
+        # log_device_placement=True, \
+        device_count = {'CPU' : num_CPU, 'GPU' : num_GPU})
+sess = tf.Session(config=tf_config)
+
+from keras import backend as K
+K.set_session(sess)
+
 import keras
 from keras.datasets import mnist
 from keras.layers import Dense, Flatten
@@ -6,7 +39,8 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.models import Sequential
 import matplotlib.pylab as plt
 
-batch_size = 128
+# batch_size = 128
+batch_size = 16
 num_classes = 10
 epochs = 10
 
