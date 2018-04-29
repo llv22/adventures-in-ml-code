@@ -1,3 +1,4 @@
+#!/usr/bin/env python -W ignore::DeprecationWarning
 from __future__ import print_function
 
 import os
@@ -23,10 +24,15 @@ else:
     num_GPU = 0
     num_CPU = 4
 
-tf_config = tf.ConfigProto(intra_op_parallelism_threads=num_cores,\
-        inter_op_parallelism_threads=num_cores, allow_soft_placement=True,\
+tf_config = tf.ConfigProto(
+        intra_op_parallelism_threads=num_cores, \ 
+        inter_op_parallelism_threads=num_cores, \
+        allow_soft_placement=True, \
         # log_device_placement=True, \
-        device_count = {'CPU' : num_CPU, 'GPU' : num_GPU})
+        device_count = {'CPU' : num_CPU, 'GPU' : num_GPU}
+    )
+tf_config.gpu_options.allow_growth = True
+tf_config.gpu_options.per_process_gpu_memory_fraction = 0.9
 sess = tf.Session(config=tf_config)
 
 from keras import backend as K
